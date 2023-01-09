@@ -1,0 +1,19 @@
+{
+  "name": "rgb-scroll",
+  "version": "0.0.1",
+  "description": "Scroll effect for images",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cbroome/rgb-scroll.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cbroome/rgb-scroll/issues"
+  },
+  "homepage": "https://github.com/cbroome/rgb-scroll#readme"
+}
