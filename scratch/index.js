@@ -1,7 +1,10 @@
+const MAX_OFFSET = 15;
+
 function copyToCanvas(image) {
   const can = document.createElement("canvas");
   can.width = image.naturalWidth || image.width;
   can.height = image.naturalHeight || image.height;
+
   can.ctx = can.getContext("2d");
   can.ctx.drawImage(image, 0, 0);
   return can;
@@ -41,6 +44,19 @@ function createCanvas(w, h) {
   return can;
 }
 
+function layerImagesInCanvas(image, RGB, canvas, offset) {
+  const ctx = canvas.ctx;
+
+  ctx.clearRect(0, 0, canvas.height, canvas.width);
+  ctx.drawImage(RGB.red, -offset, -offset);
+  ctx.globalCompositeOperation = "lighter";
+  ctx.drawImage(RGB.green, offset, offset);
+  ctx.drawImage(RGB.blue, 0, 0);
+  ctx.globalCompositeOperation = "destination-in";
+  ctx.drawImage(image, 0, 0);
+  ctx.globalCompositeOperation = "source-over";
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   let images = document.querySelector("img");
 
@@ -48,19 +64,26 @@ document.addEventListener("DOMContentLoaded", () => {
     images = [images];
   }
 
-  images.forEach((image) => {
+  for (const image of images) {
     const RGB = separatedRGB(image);
-    const recombined = createCanvas(RGB.red.width, RGB.red.height);
-    const ctx = recombined.ctx;
+    const canvas = createCanvas(RGB.red.width, RGB.red.height);
+    document.body.appendChild(canvas);
 
-    ctx.drawImage(RGB.red, -10, -10);
-    ctx.globalCompositeOperation = "lighter";
-    ctx.drawImage(RGB.green, 0, 0);
-    ctx.drawImage(RGB.blue, 10, 10);
-    ctx.globalCompositeOperation = "destination-in";
-    ctx.drawImage(image, 0, 0);
-    ctx.globalCompositeOperation = "source-over";
+    layerImagesInCanvas(image, RGB, canvas, 0);
 
-    document.body.appendChild(recombined);
-  });
+    canvas.addEventListener("mouseover", (event) => {
+      layerImagesInCanvas(image, RGB, canvas, 20);
+      let offset = 0;
+      const interval = setInterval(() => {
+        if (offset > MAX_OFFSET) {
+          clearInterval(interval);
+        }
+        layerImagesInCanvas(image, RGB, canvas, offset++);
+      }, 100);
+    });
+
+    canvas.addEventListener("mouseout", (event) => {
+      layerImagesInCanvas(image, RGB, canvas, 0);
+    });
+  }
 });
