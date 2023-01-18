@@ -1,64 +1,4 @@
-const MAX_OFFSET = 20;
-
-/*
-function copyToCanvas(image) {
-  const can = document.createElement("canvas");
-  can.width = image.naturalWidth || image.width;
-  can.height = image.naturalHeight || image.height;
-
-  can.ctx = can.getContext("2d");
-  can.ctx.drawImage(image, 0, 0);
-  return can;
-}
-
-const channels = {
-  red: "#F00",
-  green: "#0F0",
-  blue: "#00F",
-};
-
-function getChannel(channelName, image) {
-  const copy = copyToCanvas(image);
-  const ctx = copy.ctx;
-  ctx.fillStyle = channels[channelName];
-  ctx.globalCompositeOperation = "multiply";
-  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  ctx.globalCompositeOperation = "destination-in";
-  ctx.drawImage(image, 0, 0);
-  ctx.globalCompositeOperation = "source-over";
-  return copy;
-}
-
-function separatedRGB(image) {
-  return {
-    red: getChannel("red", image),
-    green: getChannel("green", image),
-    blue: getChannel("blue", image),
-  };
-}
-
-function createCanvas(w, h) {
-  const can = document.createElement("canvas");
-  can.width = w;
-  can.height = h;
-  can.ctx = can.getContext("2d");
-  return can;
-}
-
-function layerImagesInCanvas(image, RGB, canvas, offset) {
-  const ctx = canvas.ctx;
-
-  ctx.clearRect(0, 0, canvas.height, canvas.width);
-
-  ctx.drawImage(RGB.red, 0, 0);
-  ctx.globalCompositeOperation = "lighter";
-  ctx.drawImage(RGB.green, offset, 0);
-  ctx.drawImage(RGB.blue, -offset, 0);
-  ctx.globalCompositeOperation = "destination-in";
-  ctx.drawImage(image, 0, 0);
-  ctx.globalCompositeOperation = "source-over";
-}
-*/
+const MAX_OFFSET = 25;
 
 document.addEventListener("DOMContentLoaded", () => {
   let images = document.querySelector("img");
@@ -68,29 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   for (const image of images) {
-    /*
-    const RGB = separatedRGB(image);
-    const canvas = createCanvas(RGB.red.width, RGB.red.height);
-    document.body.appendChild(canvas);
-
-    layerImagesInCanvas(image, RGB, canvas, 0);
-
-    canvas.addEventListener("mouseover", (event) => {
-      layerImagesInCanvas(image, RGB, canvas, 0);
-      let offset = 0;
-      const interval = setInterval(() => {
-        if (offset > MAX_OFFSET) {
-          clearInterval(interval);
-        }
-        layerImagesInCanvas(image, RGB, canvas, offset++);
-      }, 100);
-    });
-
-    canvas.addEventListener("mouseout", (event) => {
-      layerImagesInCanvas(image, RGB, canvas, 0);
-    });
-  }
-  */
     new SplitImage(image);
   }
 });
@@ -122,7 +39,6 @@ class SplitImage {
         clearInterval(this.currentInterval);
         this.currentOperation = operation;
       }
-      //this.layerImagesInCanvas(this.image, this.RGB, this.canvas, 0);
       this.currentInterval = setInterval(() => {
         if (this.currentOffset > MAX_OFFSET) {
           clearInterval(this.currentInterval);
@@ -133,7 +49,7 @@ class SplitImage {
           this.canvas,
           this.currentOffset++
         );
-      }, 100);
+      }, 50);
     });
 
     this.canvas.addEventListener("mouseout", () => {
@@ -152,7 +68,7 @@ class SplitImage {
           this.canvas,
           this.currentOffset--
         );
-      }, 100);
+      }, 50);
     });
   }
 
@@ -196,15 +112,27 @@ class SplitImage {
 
   layerImagesInCanvas(image, RGB, canvas, offset) {
     const ctx = canvas.ctx;
+    const scale = 1 + offset / (MAX_OFFSET * 10);
+
+    // scale up the dimensions slightly to hide any jagged edges
+    const height = canvas.height * scale * 1.01;
+    const width = canvas.width * scale * 1.01;
+    const halfset = Math.ceil(offset / 10);
 
     ctx.clearRect(0, 0, canvas.height, canvas.width);
 
-    ctx.drawImage(RGB.red, 0, 0);
+    ctx.drawImage(RGB.red, -halfset, -halfset, width - offset, height);
     ctx.globalCompositeOperation = "lighter";
-    ctx.drawImage(RGB.green, offset, offset);
-    ctx.drawImage(RGB.blue, -offset, -offset);
+    ctx.drawImage(RGB.green, -halfset, -halfset, width, height - offset);
+    ctx.drawImage(
+      RGB.blue,
+      -halfset,
+      -halfset,
+      width - offset,
+      height - offset
+    );
     ctx.globalCompositeOperation = "destination-in";
-    ctx.drawImage(image, 0, 0);
+    ctx.drawImage(image, -halfset, -halfset, width, height);
     ctx.globalCompositeOperation = "source-over";
   }
 }
